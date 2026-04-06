@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Reseller OS</title>
+    <style>
+        :root { 
+            --primary: #0a84ff; --bg-gradient: linear-gradient(135deg, #0f0f12 0%, #1a1a24 100%);
+            --card-bg: rgba(30, 30, 36, 0.7); --card-border: rgba(255, 255, 255, 0.1);
+            --text: #ffffff; --green: #32d74b; --red: #ff453a; --gray: #98989d; --yellow: #ffd60a;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-gradient); background-attachment: fixed; margin: 0; padding: 0; color: var(--text); padding-bottom: 100px; -webkit-tap-highlight-color: transparent;}
+        
+        .header { background: rgba(15, 15, 18, 0.8); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); padding: 20px 15px 15px; text-align: center; font-size: 22px; font-weight: 800; border-bottom: 1px solid var(--card-border); position: sticky; top: 0; z-index: 900; letter-spacing: 0.5px;}
+        .tab-content { display: none; padding: 15px; position: relative; z-index: 10;}
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: rgba(20, 20, 24, 0.9); -webkit-backdrop-filter: blur(15px); backdrop-filter: blur(15px); display: flex; justify-content: space-around; padding: 15px 0 25px; border-top: 1px solid var(--card-border); z-index: 900;}
+        .nav-item { color: var(--gray); font-size: 11px; text-align: center; cursor: pointer; flex: 1; font-weight: 600; transition: 0.2s; touch-action: manipulation;}
+        .nav-item.active { color: var(--primary); transform: scale(1.05);}
+        .nav-icon { font-size: 22px; display: block; margin-bottom: 5px; pointer-events: none;}
+
+        .card { background: var(--card-bg); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-radius: 16px; padding: 20px; margin-bottom: 15px; border: 1px solid var(--card-border); box-shadow: 0 8px 32px rgba(0,0,0,0.2); position: relative; z-index: 20;}
+        label { display: block; margin-top: 15px; font-weight: 600; font-size: 13px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px;}
+        input, select, textarea { width: 100%; box-sizing: border-box; padding: 14px; margin-top: 8px; border: 1px solid var(--card-border); border-radius: 12px; font-size: 16px; background-color: rgba(0,0,0,0.5); color: white; -webkit-appearance: none; outline: none; transition: border 0.2s;}
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); }
+        textarea { resize: vertical; min-height: 80px; }
+        
+        .row { display: flex; gap: 12px; }
+        .col { flex: 1; }
+
+        button { width: 100%; background: linear-gradient(90deg, #0a84ff, #0056b3); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700; margin-top: 20px; cursor: pointer; box-shadow: 0 4px 15px rgba(10, 132, 255, 0.3); touch-action: manipulation; position: relative; z-index: 30;}
+        button:active { transform: scale(0.96); }
+        button.secondary { background: rgba(255,255,255,0.1); box-shadow: none; border: 1px solid var(--card-border);}
+        
+        /* Modals & Badges */
+        .analyzer-box { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; margin-top: 15px; border: 1px dashed var(--gray); display: none;}
+        .search-btns { display: flex; gap: 10px; margin-top: 10px; }
+        .search-btns button { margin-top: 0; font-size: 14px; padding: 12px; background: rgba(255,255,255,0.05); box-shadow: none; border: 1px solid var(--card-border);}
+        
+        .result { margin-top: 20px; padding: 20px; border-radius: 16px; font-size: 15px; display: none; line-height: 1.5; border: 1px solid var(--card-border); position: relative; overflow: hidden;}
+        .result::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; pointer-events: none; }
+        .buy::before { background: var(--green); }
+        .pass::before { background: var(--red); }
+        .buy { background: linear-gradient(135deg, rgba(50,215,75,0.1) 0%, rgba(0,0,0,0) 100%); }
+        .pass { background: linear-gradient(135deg, rgba(255,69,58,0.1) 0%, rgba(0,0,0,0) 100%); }
+        
+        .receipt-line { display: flex; justify-content: space-between; margin-bottom: 8px; color: #ccc;}
+        .receipt-total { display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #555; font-weight: 800; color: white; font-size: 20px;}
+        .strategy-note { margin-top: 15px; font-size: 13px; font-weight: bold; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.5); line-height: 1.4;}
+
+        .dashboard-stats { display: flex; gap: 12px; margin-bottom: 20px; }
+        .stat-box { flex: 1; background: var(--card-bg); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); padding: 15
