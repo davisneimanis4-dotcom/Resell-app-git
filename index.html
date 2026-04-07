@@ -16,7 +16,7 @@
 
     <style>
         :root { 
-            --primary: #ff9f0a; /* Changed to a faster, aggressive orange */
+            --primary: #ff9f0a; 
             --bg-gradient: linear-gradient(135deg, #0d0d0d 0%, #1a1a1c 100%);
             --card-bg: rgba(30, 30, 33, 0.8); --card-border: rgba(255, 255, 255, 0.08);
             --text: #ffffff; --green: #32d74b; --red: #ff453a; --gray: #8e8e93; 
@@ -47,13 +47,6 @@
         
         .search-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
         .search-btns button { flex: 1 1 calc(33% - 8px); margin-top: 0; font-size: 13px; padding: 10px 5px; background: rgba(255,255,255,0.05); box-shadow: none; border: 1px solid var(--card-border);}
-        
-        /* Quick Reasoning Checkboxes */
-        .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;}
-        .check-label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #eee; text-transform: none; letter-spacing: 0; margin-top: 0; cursor: pointer;}
-        input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); margin: 0;}
-
-        .reasoning-box { background: rgba(0,0,0,0.5); border-left: 4px solid var(--primary); padding: 15px; border-radius: 0 12px 12px 0; margin-top: 15px; font-size: 14px; line-height: 1.5; display: none;}
 
         .result { margin-top: 20px; padding: 20px; border-radius: 16px; font-size: 15px; display: none; line-height: 1.5; border: 1px solid var(--card-border); position: relative; overflow: hidden;}
         .result::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; pointer-events: none; }
@@ -73,10 +66,10 @@
         .stat-value { font-size: 24px; font-weight: 800; margin-top: 5px; color: var(--green); }
         
         .item-card { background: rgba(20,20,22,0.9); border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; gap: 15px; border-left: 4px solid var(--primary); border-top: 1px solid var(--card-border); border-right: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border);}
-        .item-info { flex: 1; font-size: 13px; color: var(--gray); pointer-events: none;}
+        .item-info { flex: 1; font-size: 13px; color: var(--gray); }
         .item-info strong { font-size: 16px; display: block; margin-bottom: 4px; color: white;}
-        .sell-btn { background: rgba(255,255,255,0.1); color: white; padding: 8px; font-size: 12px; margin-top: 8px; border: 1px solid var(--card-border); box-shadow: none; pointer-events: auto;}
-        
+        .sell-btn { background: rgba(255,255,255,0.1); color: white; padding: 8px; font-size: 12px; margin-top: 8px; border: 1px solid var(--card-border); box-shadow: none;}
+
         .template-box { background: rgba(0,0,0,0.5); border: 1px solid var(--card-border); padding: 15px; border-radius: 12px; margin-top: 10px; font-size: 14px; line-height: 1.5; color: #ddd; white-space: pre-wrap;}
         .copy-btn { margin-top: 8px; padding: 12px; font-size: 14px;}
 
@@ -90,6 +83,25 @@
     <div class="header" id="appHeader">QuickFlip OS</div>
 
     <div id="tab-source" class="tab-content active">
+        
+        <div class="card" style="border: 1px solid var(--primary);">
+            <h3 style="margin-top:0; border-bottom: 1px solid var(--card-border); padding-bottom: 10px; color: var(--primary);">Demand & Velocity Engine</h3>
+            <p style="font-size: 12px; color: var(--gray);">Check eBay or Vinted. How many are listed vs. how many have sold recently?</p>
+            
+            <div class="row">
+                <div class="col">
+                    <label>Active Listings</label>
+                    <input type="number" id="activeCount" placeholder="e.g. 10">
+                </div>
+                <div class="col">
+                    <label>Sold Listings</label>
+                    <input type="number" id="soldCount" placeholder="e.g. 25">
+                </div>
+            </div>
+            <button class="secondary" style="padding: 12px; font-size: 14px; margin-top: 15px;" onclick="calculateVelocity()">Check Sell-Through Rate</button>
+            <div id="velocityResult" class="result" style="margin-top: 15px; padding: 15px;"></div>
+        </div>
+
         <div class="card">
             <label>Item Name / Brand</label>
             <input type="text" id="itemName" placeholder="e.g. Nike Dunk Low">
@@ -111,7 +123,7 @@
             </div>
             
             <button class="secondary" style="padding: 12px; font-size: 14px; margin-top: 15px;" onclick="generateReasoning()">⚡ Check Velocity</button>
-            <div id="reasoningOutput" class="reasoning-box"></div>
+            <div id="reasoningOutput" class="reasoning-box" style="display:none;"></div>
 
             <label style="margin-top: 25px; border-bottom: 1px solid var(--card-border); padding-bottom: 5px;">Arbitrage Calculator</label>
             <select id="platform">
@@ -151,6 +163,8 @@
                 <div class="stat-value" id="totalProfit" style="color: var(--primary);">€0.00</div>
             </div>
         </div>
+        <label style="font-size:12px; color:var(--gray);">Search Active Flips</label>
+        <input type="text" id="vaultSearch" placeholder="Search by name..." style="margin-bottom:12px;" oninput="renderVault()">
         <div id="inventoryList"></div>
     </div>
 
@@ -214,100 +228,265 @@
     </div>
 
     <script>
+        // --- Storage & Utils ---
+        const STORAGE_KEY = 'beastVault';
+
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/[&\"'<>]/g, function (s) {
+                return ({'&':'&amp;', '\"':'&quot;', "'":'&#39;', '<':'&lt;', '>':'&gt;'})[s];
+            });
+        }
+
+        function safeGetInventory() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return [];
+                const parsed = JSON.parse(raw);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) {
+                console.error('Failed to parse vault:', e);
+                return [];
+            }
+        }
+
+        function saveInventory(items) {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+            } catch (e) {
+                console.error('Failed to save vault:', e);
+            }
+        }
+
+        function addItemToStorage(item) {
+            const inv = safeGetInventory();
+            inv.push(item);
+            saveInventory(inv);
+        }
+
+        function markSoldInStorage(id, finalSale) {
+            const inv = safeGetInventory();
+            const ix = inv.findIndex(i => i.id === id);
+            if (ix !== -1) {
+                inv[ix].status = 'sold';
+                inv[ix].realizedProfit = +(finalSale - (inv[ix].totalInvestment || 0));
+                saveInventory(inv);
+                return true;
+            }
+            return false;
+        }
+
+        function removeItemFromStorage(id) {
+            const inv = safeGetInventory();
+            const filtered = inv.filter(i => i.id !== id);
+            saveInventory(filtered);
+        }
+
+        function calculateFees(platform, price) {
+            const feeRates = {
+                vinted: { flat: 0.70, percent: 0.05 },
+                marktplaats: { flat: 0, percent: 0 }
+            };
+            const rate = feeRates[platform] || { flat: 0, percent: 0 };
+            return +(rate.flat + (price * rate.percent));
+        }
+
+        function calculateInvestment({ asking = 0, shipping = 0, platform = 'vinted' } = {}) {
+            const fees = calculateFees(platform, asking);
+            return +(asking + shipping + fees);
+        }
+
+        function analyzeDealLogic({ asking = 0, shipping = 0, sale = 0, platform = 'vinted' } = {}) {
+            const totalInvestment = calculateInvestment({ asking, shipping, platform });
+            const expectedProfit = +(sale - totalInvestment);
+            const roi = totalInvestment > 0 ? +(expectedProfit / totalInvestment) * 100 : 0;
+            return { totalInvestment, expectedProfit, roi };
+        }
+
+        function escapeCsvCell(cell = '') {
+            const s = String(cell);
+            const needsQuoting = /[",\n\r]/.test(s) || /^[=+\-@]/.test(s);
+            let out = s.replace(/"/g, '""');
+            if (needsQuoting) out = '"' + out + '"';
+            return out;
+        }
+
+        function buildCsv(rows = []) {
+            const header = ['Asset Name','Status','Capital Deployed','Expected Profit','Realized Profit'];
+            const lines = [header.join(',')];
+            rows.forEach(r => {
+                const line = [
+                    escapeCsvCell(r.name || ''),
+                    escapeCsvCell(r.status || ''),
+                    escapeCsvCell((r.totalInvestment || 0).toFixed(2)),
+                    escapeCsvCell((r.expectedProfit || 0).toFixed(2)),
+                    escapeCsvCell((r.realizedProfit || 0).toFixed(2))
+                ].join(',');
+                lines.push(line);
+            });
+            return lines.join('\n');
+        }
+
+        function formatCurrency(n) { return '€' + Number(n || 0).toFixed(2); }
+
+        // --- App State ---
         let currentItem = {};
         let activeLiquidateId = null;
 
+        // --- UI helpers ---
         function switchTab(tabId, title, element) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
             document.getElementById(`tab-${tabId}`).classList.add('active');
-            element.classList.add('active');
+            if (element) element.classList.add('active');
             document.getElementById('appHeader').innerText = title;
             if(tabId === 'vault') renderVault();
             if(tabId === 'ledger') renderLedger();
         }
 
+        // --- Velocity Calculator ---
+        function calculateVelocity() {
+            const active = parseFloat(document.getElementById('activeCount').value);
+            const sold = parseFloat(document.getElementById('soldCount').value);
+            const resultBox = document.getElementById('velocityResult');
+            if(isNaN(active) || isNaN(sold)) { alert('Please enter both Active and Sold numbers.'); return; }
+            if(active === 0 && sold > 0) {
+                resultBox.className = 'result buy';
+                resultBox.textContent = 'STR: 100%+ - UNICORN: There are none listed and people are buying them. Grab it immediately.';
+                resultBox.style.display = 'block';
+                return;
+            }
+            if(active === 0 && sold === 0) {
+                resultBox.className = 'result warn';
+                resultBox.textContent = 'STR: Unknown - GHOST TOWN: No data. High risk.';
+                resultBox.style.display = 'block';
+                return;
+            }
+            const str = (sold / active) * 100;
+            resultBox.style.display = 'block';
+            if (str >= 100) {
+                resultBox.className = 'result buy';
+                resultBox.textContent = `STR: ${Math.round(str)}% - INSANE DEMAND: Demand outpaces supply. Will sell in 24-48 hours. Buy it.`;
+            } else if (str >= 50) {
+                resultBox.className = 'result buy';
+                resultBox.textContent = `STR: ${Math.round(str)}% - HIGH DEMAND: Solid market. Should flip within 1 to 2 weeks.`;
+            } else if (str >= 20) {
+                resultBox.className = 'result warn';
+                resultBox.textContent = `STR: ${Math.round(str)}% - SLOW BURN: Market is saturated. Only buy if the margin is absolutely massive.`;
+            } else {
+                resultBox.className = 'result pass';
+                resultBox.textContent = `STR: ${Math.round(str)}% - DEAD MARKET: Supply completely dwarfs demand. Do not buy for quick flips.`;
+            }
+        }
+
         function deepSearch(type) {
             const query = document.getElementById('itemName').value;
-            if(!query) return alert("Enter an Item Name or Brand first!");
+            if(!query) return alert('Enter an Item Name or Brand first!');
             const enc = encodeURIComponent(query);
-            let url = "";
+            let url = '';
             if(type === 'vinted') url = `https://www.vinted.nl/catalog?search_text=${enc}`;
             if(type === 'marktplaats') url = `https://www.marktplaats.nl/q/${enc.replace(/%20/g, '+')}/`;
-            if(type === 'ebay') url = `https://www.ebay.nl/sch/i.html?_nkw=${enc}&LH_Sold=1&LH_Complete=1`; 
+            if(type === 'ebay') url = `https://www.ebay.nl/sch/i.html?_nkw=${enc}&LH_Sold=1&LH_Complete=1`;
             window.open(url, '_blank');
         }
 
+        // --- Reasoning ---
         function generateReasoning() {
             const isHype = document.getElementById('chkHype').checked;
             const isBelowMarket = document.getElementById('chkBelowMarket').checked;
             const isNiche = document.getElementById('chkNiche').checked;
             const isFlawed = document.getElementById('chkFlawed').checked;
-            
-            let reasoning = "";
-
+            let reasoning = '';
             if (isFlawed) {
-                reasoning = "<strong style='color:var(--red)'>AVOID (Velocity Killer):</strong> Flaws require massive discounts to sell fast. Unless you are getting it for practically free, this will sit in your inventory forever. Hard pass for quick flips.";
+                reasoning = 'AVOID (Velocity Killer): Flaws require massive discounts to sell fast. Unless you are getting it for practically free, this is usually a hold.';
             } else if (isHype && isBelowMarket) {
-                reasoning = "<strong style='color:var(--green)'>INSTANT ARBITRAGE:</strong> Hype item priced below market. This is the holy grail of quick flipping. Buy immediately, list just under market average, and it will sell in hours.";
+                reasoning = 'INSTANT ARBITRAGE: Hype item priced below market. This is the holy grail of quick flipping. Buy immediately, list just under comps.';
             } else if (isNiche) {
-                reasoning = "<strong style='color:#ffd60a'>SLOW MONEY WARNING:</strong> Vintage or highly niche items take time to find the right buyer. This ties up your capital. Only buy if the margin is over 100% to justify the wait time.";
+                reasoning = 'SLOW MONEY WARNING: Vintage or highly niche items take time to find the right buyer. This ties up your capital.';
             } else if (isBelowMarket) {
-                reasoning = "<strong style='color:var(--green)'>SOLID VOLUME PLAY:</strong> Good margin opportunity. Price it aggressively to turn your cash around in a few days.";
+                reasoning = 'SOLID VOLUME PLAY: Good margin opportunity. Price it aggressively to turn your cash around in a few days.';
             } else {
-                reasoning = "<strong>Check Comps:</strong> To flip fast, you need to price it slightly below recent sold listings. If there is no meat left on the bone after fees, skip it and keep hunting.";
+                reasoning = 'Check Comps: To flip fast, you need to price slightly below recent sold listings. If no meat left after fees, skip.';
             }
-
             const box = document.getElementById('reasoningOutput');
-            box.innerHTML = reasoning;
+            box.textContent = reasoning;
             box.style.display = 'block';
         }
 
+        // --- Analyze / Save ---
         function analyzeDeal() {
-            const name = document.getElementById('itemName').value || "Quick Flip Asset";
+            const name = document.getElementById('itemName').value || 'Quick Flip Asset';
             const platform = document.getElementById('platform').value;
             const asking = parseFloat(document.getElementById('askingPrice').value) || 0;
             const shipping = parseFloat(document.getElementById('shippingPrice').value) || 0;
             const sale = parseFloat(document.getElementById('salePrice').value) || 0;
+            if (asking < 0 || shipping < 0 || sale < 0) return alert('Enter valid positive numbers.');
 
-            let fees = platform === 'vinted' && asking > 0 ? 0.70 + (asking * 0.05) : 0;
-            const totalInvestment = asking + shipping + fees;
-            const expectedProfit = sale - totalInvestment;
-            const roi = totalInvestment > 0 ? (expectedProfit / totalInvestment) * 100 : 0;
+            const fees = calculateFees(platform, asking);
+            const totalInvestment = +(asking + shipping + fees);
+            const expectedProfit = +(sale - totalInvestment);
+            const roi = totalInvestment > 0 ? +(expectedProfit / totalInvestment) * 100 : 0;
 
             const resultBox = document.getElementById('resultBox');
             resultBox.style.display = 'block';
 
             currentItem = { ...currentItem, id: Date.now(), name, totalInvestment, expectedProfit, status: 'active' };
 
-            let receiptHTML = `
-                <div class="receipt-line"><span>Buy Price + Shipping:</span> <span>€${(asking + shipping).toFixed(2)}</span></div>
-                <div class="receipt-line"><span>Platform Fees:</span> <span>€${fees.toFixed(2)}</span></div>
-                <div class="receipt-line" style="border-top: 1px solid var(--card-border); margin-top: 5px; padding-top: 8px;"><span>Total Sunk:</span> <span>€${totalInvestment.toFixed(2)}</span></div>
-                <div class="receipt-total" style="font-size: 16px; color: var(--gray);"><span>Realistic Sell:</span> <span>€${sale.toFixed(2)}</span></div>
-                <div class="receipt-total"><span>EST. PROFIT:</span> <span>€${expectedProfit.toFixed(2)}</span></div>
-            `;
+            // Build receipt DOM safely
+            resultBox.className = 'result';
+            const frag = document.createDocumentFragment();
+            const line1 = document.createElement('div'); line1.className = 'receipt-line';
+            const spanA = document.createElement('span'); spanA.textContent = 'Buy Price + Shipping:';
+            const spanB = document.createElement('span'); spanB.textContent = formatCurrency(asking + shipping);
+            line1.appendChild(spanA); line1.appendChild(spanB); frag.appendChild(line1);
 
-            // Quick Flip Metrics: Targets > 25% ROI and at least €5 profit to justify the packing/shipping effort.
+            const line2 = document.createElement('div'); line2.className = 'receipt-line';
+            const spanC = document.createElement('span'); spanC.textContent = 'Platform Fees:';
+            const spanD = document.createElement('span'); spanD.textContent = formatCurrency(fees);
+            line2.appendChild(spanC); line2.appendChild(spanD); frag.appendChild(line2);
+
+            const totalSunk = document.createElement('div'); totalSunk.className = 'receipt-line'; totalSunk.style.borderTop = '1px solid var(--card-border)'; totalSunk.style.marginTop = '5px'; totalSunk.style.paddingTop = '8px';
+            const spanE = document.createElement('span'); spanE.textContent = 'Total Sunk:';
+            const spanF = document.createElement('span'); spanF.textContent = formatCurrency(totalInvestment);
+            totalSunk.appendChild(spanE); totalSunk.appendChild(spanF); frag.appendChild(totalSunk);
+
+            const realistic = document.createElement('div'); realistic.className = 'receipt-total'; realistic.style.fontSize = '16px'; realistic.style.color = 'var(--gray)';
+            const rA = document.createElement('span'); rA.textContent = 'Realistic Sell:';
+            const rB = document.createElement('span'); rB.textContent = formatCurrency(sale);
+            realistic.appendChild(rA); realistic.appendChild(rB); frag.appendChild(realistic);
+
+            const estProfit = document.createElement('div'); estProfit.className = 'receipt-total';
+            const pA = document.createElement('span'); pA.textContent = 'EST. PROFIT:';
+            const pB = document.createElement('span'); pB.textContent = formatCurrency(expectedProfit);
+            estProfit.appendChild(pA); estProfit.appendChild(pB); frag.appendChild(estProfit);
+
+            // Strategy note
+            const note = document.createElement('div'); note.className = 'strategy-note';
             if (expectedProfit >= 5 && roi >= 25) {
                 resultBox.className = 'result buy';
-                resultBox.innerHTML = receiptHTML + `<div class="strategy-note" style="color: var(--green);">🔥 FAST FLIP APPROVED<br>Strong ROI (${roi.toFixed(0)}%). Good margin for velocity flipping.</div>`;
+                note.style.color = 'var(--green)';
+                note.textContent = `FAST FLIP APPROVED — Strong ROI (${Math.round(roi)}%).`;
             } else if (expectedProfit > 0) {
                 resultBox.className = 'result warn';
-                resultBox.innerHTML = receiptHTML + `<div class="strategy-note" style="color: #ffd60a;">⚠️ TIGHT MARGIN (${roi.toFixed(0)}% ROI)<br>Only €${expectedProfit.toFixed(2)} profit. Only buy if it's high hype and guaranteed to sell today.</div>`;
+                note.style.color = '#ffd60a';
+                note.textContent = `TIGHT MARGIN (${Math.round(roi)}% ROI) — Only ${formatCurrency(expectedProfit)}. Only buy if velocity is high.`;
             } else {
                 resultBox.className = 'result pass';
-                resultBox.innerHTML = receiptHTML + `<div class="strategy-note" style="color: var(--red);">💀 LOSS MAKER<br>Negative or zero return. Abort.</div>`;
+                note.style.color = 'var(--red)';
+                note.textContent = `LOSS MAKER — Negative or zero return. Abort.`;
             }
+            frag.appendChild(note);
+
+            resultBox.innerHTML = '';
+            resultBox.appendChild(frag);
             document.getElementById('saveBtn').style.display = 'block';
         }
 
         function saveToVault() {
-            if (!currentItem.totalInvestment) return;
-            let inventory = JSON.parse(localStorage.getItem('beastVault')) || [];
-            inventory.push(currentItem);
-            localStorage.setItem('beastVault', JSON.stringify(inventory));
-            
+            if (!currentItem || !currentItem.totalInvestment) return;
+            addItemToStorage(currentItem);
+
+            // Clear UI
             document.getElementById('itemName').value = '';
             document.getElementById('askingPrice').value = '';
             document.getElementById('shippingPrice').value = '';
@@ -317,63 +496,81 @@
             document.getElementById('reasoningOutput').style.display = 'none';
             document.querySelectorAll('input[type=checkbox]').forEach(el => el.checked = false);
             currentItem = {};
-            alert("Added to Active Flips!");
+            renderVault();
+            alert('Added to Active Flips!');
         }
 
         function renderVault() {
-            const inventory = JSON.parse(localStorage.getItem('beastVault')) || [];
+            const inventory = safeGetInventory();
             const list = document.getElementById('inventoryList');
+            const search = (document.getElementById('vaultSearch').value || '').toLowerCase().trim();
             let totalSpent = 0, totalProfit = 0;
-            list.innerHTML = "";
+            list.innerHTML = '';
+            const frag = document.createDocumentFragment();
 
             inventory.slice().reverse().forEach(item => {
-                if(item.status !== 'active') return; 
+                if(item.status !== 'active') return;
+                if (search && !(item.name || '').toLowerCase().includes(search)) return;
                 let inv = item.totalInvestment || 0;
                 let prof = item.expectedProfit || 0;
                 let roi = inv > 0 ? (prof / inv) * 100 : 0;
                 totalSpent += inv;
                 totalProfit += prof;
 
-                list.innerHTML += `
-                    <div class="item-card">
-                        <div class="item-info">
-                            <strong>${item.name || "Quick Flip Asset"}</strong>
-                            Cost: €${inv.toFixed(2)}<br>
-                            Est. Profit: €${prof.toFixed(2)} <span style="color:var(--gray); font-size:11px;">(${roi.toFixed(0)}% ROI)</span>
-                            <button class="sell-btn" onclick="openModal(${item.id})">Mark Sold</button>
-                        </div>
-                    </div>
-                `;
+                const card = document.createElement('div'); card.className = 'item-card';
+                const info = document.createElement('div'); info.className = 'item-info';
+                const title = document.createElement('strong'); title.textContent = item.name || 'Quick Flip Asset';
+                info.appendChild(title);
+                const details = document.createElement('div'); details.style.marginTop = '6px';
+                details.textContent = `Cost: ${formatCurrency(inv)}  •  Est. Profit: ${formatCurrency(prof)} (${Math.round(roi)}% ROI)`;
+                info.appendChild(details);
+
+                const btnWrap = document.createElement('div'); btnWrap.style.marginLeft = '12px'; btnWrap.style.display = 'flex'; btnWrap.style.flexDirection = 'column'; btnWrap.style.gap = '8px';
+                const sellBtn = document.createElement('button'); sellBtn.className = 'sell-btn'; sellBtn.textContent = 'Mark Sold';
+                sellBtn.onclick = () => openModal(item.id);
+                const delBtn = document.createElement('button'); delBtn.className = 'sell-btn'; delBtn.textContent = 'Delete';
+                delBtn.onclick = () => { if (confirm('Delete this flip? This cannot be undone.')) { removeItemFromStorage(item.id); renderVault(); } };
+                btnWrap.appendChild(sellBtn); btnWrap.appendChild(delBtn);
+
+                card.appendChild(info); card.appendChild(btnWrap);
+                frag.appendChild(card);
             });
-            document.getElementById('totalSpent').innerText = `€${totalSpent.toFixed(2)}`;
-            document.getElementById('totalProfit').innerText = `€${totalProfit.toFixed(2)}`;
+
+            list.appendChild(frag);
+            document.getElementById('totalSpent').innerText = formatCurrency(totalSpent);
+            document.getElementById('totalProfit').innerText = formatCurrency(totalProfit);
         }
 
         function renderLedger() {
-            const inventory = JSON.parse(localStorage.getItem('beastVault')) || [];
+            const inventory = safeGetInventory();
             const list = document.getElementById('ledgerList');
             let realizedTotal = 0;
-            list.innerHTML = "";
+            list.innerHTML = '';
+            const frag = document.createDocumentFragment();
 
             inventory.slice().reverse().forEach(item => {
-                if(item.status !== 'sold') return; 
+                if(item.status !== 'sold') return;
                 let inv = item.totalInvestment || 0;
                 let realized = item.realizedProfit || 0;
                 realizedTotal += realized;
 
-                list.innerHTML += `
-                    <div class="item-card" style="border-left-color: var(--green);">
-                        <div class="item-info">
-                            <strong>${item.name || "Quick Flip Asset"}</strong>
-                            Bought: €${inv.toFixed(2)}<br>
-                            <div style="color:var(--green); font-weight:bold; margin-top:5px; font-size: 14px;">Cleared Profit: €${realized.toFixed(2)}</div>
-                        </div>
-                    </div>
-                `;
+                const card = document.createElement('div'); card.className = 'item-card'; card.style.borderLeftColor = 'var(--green)';
+                const info = document.createElement('div'); info.className = 'item-info';
+                const title = document.createElement('strong'); title.textContent = item.name || 'Quick Flip Asset';
+                info.appendChild(title);
+                const lines = document.createElement('div'); lines.style.marginTop = '6px';
+                lines.innerHTML = `Bought: ${formatCurrency(inv)}<br><div style="color:var(--green); font-weight:bold; margin-top:5px; font-size: 14px;">Cleared Profit: ${formatCurrency(realized)}</div>`;
+                info.appendChild(lines);
+
+                card.appendChild(info);
+                frag.appendChild(card);
             });
-            document.getElementById('realizedTotal').innerText = `€${realizedTotal.toFixed(2)}`;
+
+            list.appendChild(frag);
+            document.getElementById('realizedTotal').innerText = formatCurrency(realizedTotal);
         }
 
+        // --- Modals ---
         function openModal(id) {
             activeLiquidateId = id;
             document.getElementById('modalFinalPrice').value = '';
@@ -388,48 +585,37 @@
         function confirmLiquidation() {
             if(!activeLiquidateId) return;
             const finalSaleStr = document.getElementById('modalFinalPrice').value;
-            if(!finalSaleStr || isNaN(finalSaleStr)) {
-                alert("Enter a valid final sale price.");
-                return;
-            }
-            let finalSale = parseFloat(finalSaleStr);
-            let inventory = JSON.parse(localStorage.getItem('beastVault')) || [];
-            const itemIndex = inventory.findIndex(i => i.id === activeLiquidateId);
-            
-            if(itemIndex !== -1) {
-                let inv = inventory[itemIndex].totalInvestment || 0;
-                inventory[itemIndex].status = 'sold';
-                inventory[itemIndex].realizedProfit = finalSale - inv;
-                localStorage.setItem('beastVault', JSON.stringify(inventory));
-            }
+            if(!finalSaleStr || isNaN(finalSaleStr)) { alert('Enter a valid final sale price.'); return; }
+            const finalSale = parseFloat(finalSaleStr);
+            const ok = markSoldInStorage(activeLiquidateId, finalSale);
             closeModal();
             renderVault();
+            if (ok) renderLedger();
         }
 
         function copyText(elementId) {
-            let text = document.getElementById(elementId).innerText;
-            navigator.clipboard.writeText(text).then(() => alert("Copied to clipboard!"));
+            const text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard!')).catch(() => alert('Copy not supported.'));
         }
 
         function exportCSV() {
-            const inventory = JSON.parse(localStorage.getItem('beastVault')) || [];
-            if(inventory.length === 0) return alert("Ledger is empty!");
-            let csvContent = "data:text/csv;charset=utf-8,Asset Name,Status,Capital Deployed,Expected Profit,Realized Profit\n";
-            inventory.forEach(i => {
-                let name = i.name || "Unknown";
-                let inv = i.totalInvestment || 0;
-                let exp = i.expectedProfit || 0;
-                let real = i.realizedProfit || 0;
-                let row = `"${name}",${i.status},${inv.toFixed(2)},${exp.toFixed(2)},${real.toFixed(2)}`;
-                csvContent += row + "\n";
-            });
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "quickflip_ledger.csv");
+            const inventory = safeGetInventory();
+            if(inventory.length === 0) return alert('Ledger is empty!');
+            const csv = buildCsv(inventory);
+            const encodedUri = encodeURI('data:text/csv;charset=utf-8,' + csv);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', 'quickflip_ledger.csv');
             document.body.appendChild(link);
             link.click();
+            link.remove();
         }
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderVault();
+            renderLedger();
+        });
     </script>
 </body>
 </html>
