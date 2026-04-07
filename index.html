@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>FlipMaster Pro - Advanced Reselling Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark-bg: #0f172a;
+            --darker-bg: #020617;
+            --card-bg: #1e293b;
+            --border: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94a3b8;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--darker-bg) 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        
+        /* ===== HEADER & NAVIGATION ===== */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            z-index: 1000;
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+        }
+        
+        nav {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        
+        nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-weight: 500;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        nav a:hover,
+        nav a.active {
+            color: var(--primary);
+        }
+        
+        nav a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 1px;
+        }
+        
+        .nav-icons {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+        
+        .icon-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+            position: relative;
+        }
+        
+        .icon-btn:hover {
+            color: var(--primary);
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        /* ===== MAIN CONTENT ===== */
+        main {
+            margin-top: 80px;
+            padding: 2rem;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+            padding-bottom: 4rem;
+        }
+        
+        /* ===== TAB SYSTEM ===== */
+        .tabs-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+            overflow-x: auto;
+        }
+        
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            position: relative;
+        }
+        
+        .tab-btn.active {
+            color: var(--primary);
+        }
+        
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1rem;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary);
+        }
+        
+        .tab-btn:hover {
+            color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* ===== DASHBOARD STATS ===== */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05));
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.1);
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-change {
+            font-size: 12px;
+            color: var(--success);
+            font-weight: 500;
+        }
+        
+        /* ===== CATEGORY GRID ===== */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .category-card {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .category-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            background: rgba(99, 102, 241, 0.05);
+        }
+        
+        .category-card.active {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.1));
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+        }
+        
+        .category-icon {
+            font-size: 40px;
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+        
+        .category-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .category-count {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-top: 0.5rem;
+        }
+        
+        /* ===== PRODUCT GRID ===== */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .product-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .product-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 12px 32px rgba(99, 102, 241, 0.15);
+            transform: translateY(-8px);
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .condition-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--success);
+            color: white;
+            padding: 0.35rem 0.85rem;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            backdrop-filter: blur(10px);
+        }
+        
+        .product-info {
+            padding: 1.5rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .product-title {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.3;
+        }
+        
+        .product-category {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        .product-price {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.75rem;
+        }
+        
+        .product-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-bottom: 1.5rem;
+            padding: 0.85rem;
+            background: rgba(99, 102, 241, 0.05);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .stat-item-label {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            font-weight: 500;
+        }
+        
+        .stat-item-value {
+            font-weight: 700;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+        
+        .product-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: auto;
+        }
+        
+        /* ===== BUTTONS ===== */
+        .btn {
+            padding: 0.85rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 13px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            flex: 1;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            flex: 1;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(99, 102, 241, 0.2);
+        }
+        
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 12px;
+        }
+        
+        /* ===== ANALYTICS GRID ===== */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .chart-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+        
+        .chart-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            gap: 1rem;
+        }
+        
+        .chart-label {
+            min-width: 90px;
+            font-size: 12px;
+            color: var(--text-tertiary);
+            font-weight: 600;
+        }
+        
+        .chart-bar-container {
+            flex-grow: 1;
+            height: 28px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        
+        .chart-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transition: width 0.3s ease;
+        }
+        
+        .chart-value {
+            min-width: 50px;
+            text-align: right;
+            font-weight: 700;
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+        
+        /* ===== TABLE STYLES ===== */
+        .inventory-table {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .table-header {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 1.5fr 1.5fr 1.5fr 1fr;
+            gap: 1rem;
+            padding: 1.25rem;
+            background: rgba(99, 102, 241, 0.05);
+            border-bottom: 1px solid var(--border);
+            font-weight: 700;
+            color: var(--text-secondary);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .table-row {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 1.5fr 1.5fr 1.5fr 1fr;
+            gap: 1rem;
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+            transition: background 0.3s ease;
+        }
+        
+        .table-row:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+        
+        .table-cell {
+            font-size: 13px;
+        }
+        
+        .table-cell-label {
+            color: var(--text-tertiary);
+            font-size: 11px;
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        
+        .table-cell-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        
+        /* ===== CONTROLS BAR ===== */
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+            background: var(--card-bg);
+            padding: 1.25rem;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            background: rgba(99, 102, 241, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-box input::placeholder {
+            color: var(--text-tertiary);
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-select {
+            padding: 0.85rem 1rem;
+            background: rgba(99, 102, 241, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+        
+        /* ===== MODAL STYLES ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-header {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+        
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            background: rgba(99, 102, 241, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 13px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .form-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+        
+        /* ===== INSIGHTS SECTION ===== */
+        .insights-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        
+        .insights-box h3 {
+            margin-bottom: 1.5rem;
+            font-size: 18px;
+        }
+        
+        .insight-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 0.85rem;
+            background: rgba(99, 102, 241, 0.05);
+            border-radius: 8px;
+            border-left: 3px solid var(--primary);
+        }
+        
+        .insight-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .insight-text {
+            flex: 1;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        
+        /* ===== FOOTER ===== */
+        footer {
+            margin-top: 4rem;
+            padding: 2rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--text-tertiary);
+            font-size: 13px;
+        }
+        
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 768px) {
+            header {
+                padding: 0.75rem 1rem;
+            }
+            
+            nav {
+                display: none;
+            }
+            
+            main {
+                padding: 1rem;
+                margin-top: 60px;
+            }
+            
+            .header-container {
+                flex-direction: row;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .product-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            .table-header,
+            .table-row {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.5rem;
+            }
+            
+            .controls-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                min-width: auto;
+            }
+            
+            .filter-group {
+                width: 100%;
+            }
+            
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .category-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo">💼 FlipMaster Pro</div>
+            <nav id="main-nav">
+                <a class="nav-link active" data-tab="dashboard">Dashboard</a>
+                <a class="nav-link" data-tab="products">Products</a>
+                <a class="nav-link" data-tab="analytics">Analytics</a>
+                <a class="nav-link" data-tab="inventory">Inventory</a>
+                <a class="nav-link" data-tab="settings">Settings</a>
+            </nav>
+            <div class="nav-icons">
+                <button class="icon-btn" id="notif-btn" style="position: relative;" title="Notifications">
+                    🔔
+                    <span class="notification-badge">3</span>
+                </button>
+                <button class="icon-btn" id="profile-btn" title="Profile">👤</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- DASHBOARD TAB -->
+        <section id="dashboard-tab" class="tab-content active">
+            <h1 style="margin-bottom: 0.5rem; font-size: 32px; font-weight: 800;">Welcome back! 📊</h1>
+            <p style="color: var(--text-tertiary); margin-bottom: 2rem;">Here's your reselling performance overview</p>
+            
+            <!-- Quick Stats -->
+            <div class="dashboard">
+                <div class="stat-card">
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-value">€18,750</div>
+                    <div class="stat-change">↑ 18.5% from last month</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Active Listings</div>
+                    <div class="stat-value">52</div>
+                    <div class="stat-change">5 new this week</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Avg Profit Margin</div>
+                    <div class="stat-value">42%</div>
+                    <div class="stat-change">↑ 4.2% improvement</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Items Sold</div>
+                    <div class="stat-value">187</div>
+                    <div class="stat-change">This month total</div>
+                </div>
+            </div>
+
+            <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; margin-top: 2rem;">
+                <h2 style="font-size: 20px; margin-bottom: 1.5rem;">Quick Performance Metrics</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                    <div>
+                        <div style="font-size: 12px; color: var(--text-tertiary); margin-bottom: 0.5rem; font-weight: 600; text-transform: uppercase;">Conversion Rate</div>
+                        <div style="font-size: 24px; font-weight: 800; color: var(--success);">68.5%</div>
+                        <div style="font-size: 12px; color: var(--text-tertiary); margin-top: 0.5rem;">↑ 5.3% up</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: var(--text-tertiary); margin-bottom: 0.5rem; font-weight: 600; text-transform: uppercase;">Avg Sale Price</div>
+                        <div style="font-size: 24px; font-weight: 800; color: var(--primary);">€145.50</div>
+                        <div style="font-size: 12px; color: var(--text-tertiary); margin-top: 0.5rem;">Stable</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: var(--text-tertiary); margin-bottom: 0.5rem; font-weight: 600; text-transform: uppercase;">Avg Buy Price</div>
+                        <div style="font-size: 24px; font-weight: 800; color: var(--accent);">€64.20</div>
+                        <div style="font-size: 12px; color: var(--text-tertiary); margin-top: 0.5rem;">↓ 2.1% down</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: var(--text-tertiary); margin-bottom: 0.5rem; font-weight: 600; text-transform: uppercase;">Turnover Rate</div>
+                        <div style="font-size: 24px; font-weight: 800; color: var(--success);">18 days</div>
+                        <div style="font-size: 12px; color: var(--text-tertiary); margin-top: 0.5rem;">Average listing time</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PRODUCTS TAB -->
+        <section id="products-tab" class="tab-content">
+            <h1 style="margin-bottom: 2rem; font-size: 28px; font-weight: 800;">📦 Product Management</h1>
+            
+            <!-- Controls Bar -->
+            <div class="controls-bar">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="Search products by name or category...">
+                </div>
+                <div class="filter-group">
+                    <select class="filter-select" id="category-filter">
+                        <option value="">All Categories</option>
+                        <option value="electronics">Electronics</option>
+                        <option value="clothing">Clothing</option>
+                        <option value="furniture">Furniture</option>
+                        <option value="collectibles">Collectibles</option>
+                        <option value="accessories">Accessories</option>
+                    </select>
+                    <select class="filter-select" id="status-filter">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="sold">Sold</option>
+                        <option value="pending">Pending</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary btn-small" onclick="openAddProductModal()" style="flex: none; padding: 0.85rem 1.5rem;">+ Add Product</button>
+            </div>
+
+            <!-- Category Selector -->
+            <h2 style="margin-bottom: 1rem; margin-top: 2.5rem; font-size: 18px;">Browse by Category</h2>
+            <div class="category-grid">
+                <div class="category-card active" onclick="filterByCategory('all', event)">
+                    <span class="category-icon">📦</span>
+                    <div class="category-name">All Items</div>
+                    <div class="category-count">52</div>
+                </div>
+                <div class="category-card" onclick="filterByCategory('electronics', event)">
+                    <span class="category-icon">📱</span>
+                    <div class="category-name">Electronics</div>
+                    <div class="category-count">18</div>
+                </div>
+                <div class="category-card" onclick="filterByCategory('clothing', event)">
+                    <span class="category-icon">👕</span>
+                    <div class="category-name">Clothing</div>
+                    <div class="category-count">14</div>
+                </div>
+                <div class="category-card" onclick="filterByCategory('furniture', event)">
+                    <span class="category-icon">🪑</span>
+                    <div class="category-name">Furniture</div>
+                    <div class="category-count">8</div>
+                </div>
+                <div class="category-card" onclick="filterByCategory('collectibles', event)">
+                    <span class="category-icon">🎨</span>
+                    <div class="category-name">Collectibles</div>
+                    <div class="category-count">6</div>
+                </div>
+                <div class="category-card" onclick="filterByCategory('accessories', event)">
+                    <span class="category-icon">⌚</span>
+                    <div class="category-name">Accessories</div>
+                    <div class="category-count">6</div>
+                </div>
+            </div>
+
+            <!-- Products Grid -->
+            <h2 style="margin: 2.5rem 0 1rem 0; font-size: 18px;">Featured Products</h2>
+            <div class="product-grid" id="product-grid">
+                <!-- Products will be populated here -->
+            </div>
+        </section>
+
+        <!-- ANALYTICS TAB -->
+        <section id="analytics-tab" class="tab-content">
+            <h1 style="margin-bottom: 2rem; font-size: 28px; font-weight: 800;">📈 Market Analytics & Insights</h1>
+            
+            <div class="analytics-grid">
+                <div class="chart-container">
+                    <div class="chart-title">Sales by Category</div>
+                    <div class="chart-bar">
+                        <div class="chart-label">Electronics</div>
+                        <div class="chart-bar-container"><div class="chart-bar-fill" style="width: 85%"></div></div>
+                        <div class="chart-value">€7,250</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="chart-label">Clothing</div>
+                        <div class="chart-bar-container"><div class="chart-bar-fill" style="width: 65%"></div></div>
+                        <div class="chart-value">€4,850</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="chart-label">Furniture</div>
+                        <div class="chart-bar-container"><div class="chart-bar-fill" style="width: 72%"></div></div>
+                        <div class="chart-value">€5,200</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="chart-label">Collectibles</div>
+                        <div class="chart-bar-container"><div class="chart-bar-fill" style="width: 55%"></div></div>
+                        <div class="chart-value">€1,450</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Profit Margins by Category</div>
+                    <div class="chart-bar">
+                        <div class="chart-label">Electronics</div>
+                        <div class="chart-bar-container"><div class="chart-bar-fill" style="width: 45%"></div></div>
+                        <div class="chart-value">45%</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="chart-label">Clothing</div>
+                        <div class="chart-bar-container"><div class="chart-bar-fill" style="width: 52%"></div></div>
+                        <div class="chart-value">52%</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="chart-label">Furniture</div>
+                        <div class="chart-bar-container"><div class="chart-bar-fill" style="width: 38%"></div></div>
+                        <div class="chart-value">38%</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="chart-label">Collectibles</div>
+                        <div class="chart-bar-container"><div class="chart-bar-fill" style="width: 68%"></div></div>
+                        <div class="chart-value">68%</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Inventory Turnover Rate</div>
+                    <div class="chart-bar">
+                        <div class="chart-label">Best Sellers</div>
+                        <div class="chart-bar-container"><div class="chart-bar-fill" style="width: 92%"></div></div>
+                        <div class="chart-value">12d</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="chart-label">Average</div>
+                        <div class="chart-bar-container"><div class="chart-bar-fill" style="width: 65%"></div></div>
+                        <div class="chart-value">21d</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="chart-label">Slow Movers</div>
+                        <div class="chart-bar-container"><div class="chart-bar-fill" style="width: 35%"></div></div>
+                        <div class="chart-value">45d</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="chart-label">Not Moving</div>
+                        <div class="chart-bar-container"><div class="chart-bar-fill" style="width: 15%"></div></div>
+                        <div class="chart-value">90+d</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="insights-box">
+                <h3>📊 Market Insights & Recommendations</h3>
+                <div class="insight-item">
+                    <div class="insight-icon">✓</div>
+                    <div class="insight-text"><strong>Electronics Strong:</strong> Electronics category showing strongest growth with 18.5% increase in sales this month. High demand trend continues.</div>
+                </div>
+                <div class="insight-item">
+                    <div class="insight-icon">⚠</div>
+                    <div class="insight-text"><strong>Furniture Alert:</strong> Furniture inventory turnover is slower than average. Consider promotional pricing or clearance strategies for slow items.</div>
+                </div>
+                <div class="insight-item">
+                    <div class="insight-icon">✓</div>
+                    <div class="insight-text"><strong>Collectibles Margin:</strong> Collectibles showing highest profit margins at 68%. Expand this category with curated acquisitions.</div>
+                </div>
+                <div class="insight-item">
+                    <div class="insight-icon">●</div>
+                    <div class="insight-text"><strong>Critical:</strong> 6 items haven't sold in 90+ days. Recommend markdowns or category reassessment for these stagnant listings.</div>
+                </div>
+                <div class="insight-item">
+                    <div class="insight-icon">✓</div>
+                    <div class="insight-text"><strong>Pricing Power:</strong> Your average sale price of €145.50 reflects healthy market positioning. Maintain current pricing strategy.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- INVENTORY TAB -->
+        <section id="inventory-tab" class="tab-content">
+            <h1 style="margin-bottom: 2rem; font-size: 28px; font-weight: 800;">📋 Inventory Management</h1>
+            
+            <div class="controls-bar">
+                <div class="search-box">
+                    <input type="text" placeholder="Search inventory...">
+                </div>
+                <div class="filter-group">
+                    <select class="filter-select">
+                        <option>All Items</option>
+                        <option>In Stock</option>
+                        <option>Low Stock</option>
+                        <option>Out of Stock</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="inventory-table">
+                <div class="table-header">
+                    <div>Product Name</div>
+                    <div>Category</div>
+                    <div>Stock Level</div>
+                    <div>Buy Price</div>
+                    <div>Sell Price</div>
+                    <div>Action</div>
+                </div>
+                <div class="table-row">
+                    <div class="table-cell">
+                        <div class="table-cell-label">Product</div>
+                        <div class="table-cell-value">iPhone 14 Pro Max</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="table-cell-label">Category</div>
+                        <div class="table-cell-value">Electronics</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="table-cell-label">Stock</div>
+                        <div class="table-cell-value">8 units</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="table-cell-label">Buy</div>
+                        <div class="table-cell-value">€450</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="table-cell-label">Sell</div>
+                        <div class="table-cell-value">€720</div>
+                    </div>
+                    <div class="table-cell">
+                        <button class="btn btn-secondary btn-small" style="flex: none;">Edit</button>
+                    </div>
+                </div>
+                <div class="table-row">
+                    <div class="table-cell">
+                        <div class="table-cell-label">Product</div>
+                        <div class="table-cell-value">Vintage Leather Jacket</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="table-cell-label">Category</div>
+                        <div class="table-cell-value">Clothing</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="table-cell-label">Stock</div>
+                        <div class="table-cell-value">12 units</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="table-cell-label">Buy</div>
+                        <div class="table-cell-value">€55</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="table-cell-label">Sell</div>
+                        <div class="table-cell-value">€165</div>
+                    </div>
+                    <div class="table-cell">
+                        <button class="btn btn-secondary btn-small" style="flex: none;">Edit</button>
+                    </div>
+                </div>
+                <div class="table-row">
+                    <div class="table-cell">
+                        <div class="table-cell-label">Product</div>
+                        <div class="table-cell-value">Mid-Century Dining Table</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="table-cell-label">Category</div>
+                        <div class="table-cell-value">Furniture</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="table-cell-label">Stock</div>
+                        <div class="table-cell-value">3 units</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="table-cell-label">Buy</div>
+                        <div class="table-cell-value">€220</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="table-cell-label">Sell</div>
+                        <div class="table-cell-value">€480</div>
+                    </div>
+                    <div class="table-cell">
+                        <button class="btn btn-secondary btn-small" style="flex: none;">Edit</button>
+                    </div>
+                </div>
+                <div class="table-row">
+                    <div class="table-cell">
+                        <div class="table-cell-label">Product</div>
+                        <div class="table-cell-value">Comic Book Collection Box</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="table-cell-label">Category</div>
+                        <div class="table-cell-value">Collectibles</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="table-cell-label">Stock</div>
+                        <div class="table-cell-value">25 units</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="table-cell-label">Buy</div>
+                        <div class="table-cell-value">€12</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="table-cell-label">Sell</div>
+                        <div class="table-cell-value">€28</div>
+                    </div>
+                    <div class="table-cell">
+                        <button class="btn btn-secondary btn-small" style="flex: none;">Edit</button>
+                    </div>
+                </div>
+                <div class="table-row">
+                    <div class="table-cell">
+                        <div class="table-cell-label">Product</div>
+                        <div class="table-cell-value">Designer Handbag</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="table-cell-label">Category</div>
+                        <div class="table-cell-value">Accessories</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="table-cell-label">Stock</div>
+                        <div class="table-cell-value">6 units</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="table-cell-label">Buy</div>
+                        <div class="table-cell-value">€85</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="table-cell-label">Sell</div>
+                        <div class="table-cell-value">€240</div>
+                    </div>
+                    <div class="table-cell">
+                        <button class="btn btn-secondary btn-small" style="flex: none;">Edit</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SETTINGS TAB -->
+        <section id="settings-tab" class="tab-content">
+            <h1 style="margin-bottom: 2rem; font-size: 28px; font-weight: 800;">⚙️ Settings</h1>
+            
+            <div class="chart-container" style="max-width: 600px;">
+                <h3 style="margin-bottom: 1.5rem; font-size: 18px;">User & Business Settings</h3>
+                
+                <div class="form-group">
+                    <label class="form-label">Business Name</label>
+                    <input type="text" class="form-input" value="FlipMaster Resale" placeholder="Your business name">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-input" value="seller@flipmaster.com" placeholder="your@email.com">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Default Currency</label>
+                    <select class="filter-select" style="width: 100%;">
+                        <option selected>EUR (€)</option>
+                        <option>USD ($)</option>
+                        <option>GBP (£)</option>
+                        <option>CHF (CHF)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Minimum Profit Margin Target (%)</label>
+                    <input type="number" class="form-input" value="35" min="0" max="100" placeholder="30">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Default Shipping Cost (€)</label>
+                    <input type="number" class="form-input" value="8.50" step="0.01" placeholder="5.00">
+                </div>
+                
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-primary">Save Changes</button>
+                    <button class="btn btn-secondary">Reset to Default</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Add Product Modal -->
+    <div id="add-product-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Add New Product</div>
+            
+            <div class="form-group">
+                <label class="form-label">Product Name *</label>
+                <input type="text" class="form-input" placeholder="Enter product name">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Category *</label>
+                <select class="filter-select" style="width: 100%;">
+                    <option value="">Select category</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="clothing">Clothing</option>
+                    <option value="furniture">Furniture</option>
+                    <option value="collectibles">Collectibles</option>
+                    <option value="accessories">Accessories</option>
+                </select>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Buy Price (€) *</label>
+                    <input type="number" class="form-input" placeholder="0.00" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Sell Price (€) *</label>
+                    <input type="number" class="form-input" placeholder="0.00" step="0.01">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Condition</label>
+                <select class="filter-select" style="width: 100%;">
+                    <option>Excellent</option>
+                    <option>Good</option>
+                    <option>Fair</option>
+                    <option>Poor</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea class="form-textarea" placeholder="Add detailed product description..."></textarea>
+            </div>
+            
+            <div class="form-buttons">
+                <button class="btn btn-secondary" onclick="closeModal('add-product-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveProduct()">Add Product</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // ===== SAMPLE PRODUCT DATA =====
+        const products = [
+            {
+                id: 1,
+                name: "iPhone 14 Pro Max",
+                category: "electronics",
+                buyPrice: 450,
+                sellPrice: 720,
+                condition: "Excellent",
+                status: "active",
+                emoji: "📱"
+            },
+            {
+                id: 2,
+                name: "Vintage Leather Jacket",
+                category: "clothing",
+                buyPrice: 55,
+                sellPrice: 165,
+                condition: "Good",
+                status: "active",
+                emoji: "👕"
+            },
+            {
+                id: 3,
+                name: "MacBook Air M2",
+                category: "electronics",
+                buyPrice: 850,
+                sellPrice: 1250,
+                condition: "Excellent",
+                status: "active",
+                emoji: "📱"
+            },
+            {
+                id: 4,
+                name: "Gucci Designer Handbag",
+                category: "accessories",
+                buyPrice: 180,
+                sellPrice: 420,
+                condition: "Good",
+                status: "sold",
+                emoji: "⌚"
+            },
+            {
+                id: 5,
+                name: "Mid-Century Dining Table",
+                category: "furniture",
+                buyPrice: 220,
+                sellPrice: 480,
+                condition: "Fair",
+                status: "active",
+                emoji: "🪑"
+            },
+            {
+                id: 6,
+                name: "Supreme Limited Edition Sneakers",
+                category: "clothing",
+                buyPrice: 120,
+                sellPrice: 320,
+                condition: "Excellent",
+                status: "active",
+                emoji: "👕"
+            },
+            {
+                id: 7,
+                name: "First Edition Comic Collection",
+                category: "collectibles",
+                buyPrice: 150,
+                sellPrice: 520,
+                condition: "Good",
+                status: "active",
+                emoji: "🎨"
+            },
+            {
+                id: 8,
+                name: "PlayStation 5 Bundle",
+                category: "electronics",
+                buyPrice: 380,
+                sellPrice: 620,
+                condition: "Excellent",
+                status: "active",
+                emoji: "📱"
+            }
+        ];
+
+        // ===== RENDER PRODUCTS =====
+        function renderProducts(filteredProducts = products) {
+            const grid = document.getElementById('product-grid');
+            if (!grid) return;
+            
+            grid.innerHTML = filteredProducts.map(product => {
+                const profit = product.sellPrice - product.buyPrice;
+                const profitPercent = ((profit / product.buyPrice) * 100).toFixed(1);
+                
+                return `
+                    <div class="product-card">
+                        <div class="product-image">
+                            ${product.emoji}
+                            <div class="condition-badge">${product.condition}</div>
+                        </div>
+                        <div class="product-info">
+                            <div class="product-title">${product.name}</div>
+                            <div class="product-category">${product.category}</div>
+                            <div class="product-price">€${product.sellPrice}</div>
+                            <div class="product-stats">
+                                <div class="stat-item">
+                                    <div class="stat-item-label">Buy</div>
+                                    <div class="stat-item-value">€${product.buyPrice}</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-item-label">Profit</div>
+                                    <div class="stat-item-value" style="color: var(--success);">€${profit}</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-item-label">ROI</div>
+                                    <div class="stat-item-value" style="color: var(--success);">${profitPercent}%</div>
+                                </div>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary" onclick="buyProduct(${product.id})">Quick Buy</button>
+                                <button class="btn btn-secondary" onclick="viewDetails(${product.id})">Details</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ===== TAB SWITCHING =====
+        document.querySelectorAll('[data-tab]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const tabName = link.dataset.tab;
+                switchTab(tabName);
+            });
+        });
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.querySelectorAll('[data-tab]').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            document.getElementById(tabName + '-tab')?.classList.add('active');
+            
+            document.querySelector(`[data-tab="${tabName}"]`)?.classList.add('active');
+        }
+
+        // ===== CATEGORY FILTERING =====
+        function filterByCategory(category, event) {
+            const filtered = category === 'all' ? products : products.filter(p => p.category === category);
+            renderProducts(filtered);
+            
+            document.querySelectorAll('.category-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+        }
+
+        // ===== MODAL FUNCTIONS =====
+        function openAddProductModal() {
+            document.getElementById('add-product-modal')?.classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId)?.classList.remove('show');
+        }
+
+        function saveProduct() {
+            alert('Product added successfully! 🎉');
+            closeModal('add-product-modal');
+        }
+
+        // ===== PRODUCT ACTIONS =====
+        function buyProduct(id) {
+            const product = products.find(p => p.id === id);
+            alert(`Added "${product.name}" to your cart!\n\nPrice: €${product.sellPrice}\nProfit: €${product.sellPrice - product.buyPrice}`);
+        }
+
+        function viewDetails(id) {
+            const product = products.find(p => p.id === id);
+            const profit = product.sellPrice - product.buyPrice;
+            const roi = ((profit / product.buyPrice) * 100).toFixed(1);
+            
+            alert(`
+📦 Product Details
+━━━━━━━━━━━━━━━━━━━━
+Name: ${product.name}
+Category: ${product.category}
+Condition: ${product.condition}
+━━━━━━━━━━━━━━━━━━━━
+Buy Price: €${product.buyPrice}
+Sell Price: €${product.sellPrice}
+━━━━━━━━━━━━━━━━━━━━
+Profit: €${profit}
+ROI: ${roi}%
+Status: ${product.status.toUpperCase()}
+            `);
+        }
+
+        // ===== SEARCH FUNCTIONALITY =====
+        document.getElementById('search-input')?.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = products.filter(p => 
+                p.name.toLowerCase().includes(searchTerm) ||
+                p.category.toLowerCase().includes(searchTerm)
+            );
+            renderProducts(filtered);
+        });
+
+        // ===== FILTER FUNCTIONALITY =====
+        document.getElementById('status-filter')?.addEventListener('change', (e) => {
+            const status = e.target.value;
+            const filtered = status ? products.filter(p => p.status === status) : products;
+            renderProducts(filtered);
+        });
+
+        document.getElementById('category-filter')?.addEventListener('change', (e) => {
+            const category = e.target.value;
+            const filtered = category ? products.filter(p => p.category === category) : products;
+            renderProducts(filtered);
+        });
+
+        // ===== CLOSE MODAL ON OUTSIDE CLICK =====
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('add-product-modal');
+            if (e.target === modal) {
+                closeModal('add-product-modal');
+            }
+        });
+
+        // ===== EVENT HANDLERS =====
+        document.getElementById('notif-btn')?.addEventListener('click', () => {
+            alert('📬 Notifications\n━━━━━━━━━━━━━━━━\n✓ Item sold: iPhone 14 Pro\n✓ New offer on Handbag\n⚠ Listing expiring soon: Dining Table');
+        });
+
+        document.getElementById('profile-btn')?.addEventListener('click', () => {
+            alert('👤 Profile\n━━━━━━━━━━━━━━━━\nLogged in as: FlipMaster Pro\nMember since: March 2024\nRating: ⭐⭐⭐⭐⭐ (247 reviews)');
+        });
+
+        // ===== INITIALIZE =====
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProducts();
+        });
+    </script>
+
+    <footer>
+        <p>💼 FlipMaster Pro - Your Complete Reselling Solution | © 2026 | All Rights Reserved</p>
+    </footer>
+</body>
+</html>
